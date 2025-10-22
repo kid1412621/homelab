@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: jellyfin
+  name: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: jellyfin
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        service: jellyfin
+    spec:
+      containers:
+        - env:
+            - name: JELLYFIN_PublishedServerUrl
+              value: https://jellyfin.nuc.lan
+          image: jellyfin/jellyfin
+          name: jellyfin
+          securityContext:
+            runAsGroup: 1000
+            runAsUser: 1000
+          ports:
+            - containerPort: 8096
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: "250m"
+              memory: 256Mi
+          volumeMounts:
+            - mountPath: /config
+              name: jellyfin-config
+            - mountPath: /cache
+              name: jellyfin-cache
+            # - mountPath: /movies
+            #   name: jellyfin-claim2
+            # - mountPath: /movies2
+            #   name: jellyfin-claim3
+            # - mountPath: /shows
+            #   name: jellyfin-claim4
+            # - mountPath: /shows2
+            #   name: jellyfin-claim5
+            # - mountPath: /archive
+            #   name: jellyfin-claim6
+      restartPolicy: Always
+      volumes:
+        - name: jellyfin-config
+          persistentVolumeClaim:
+            claimName: jellyfin-config
+        - name: jellyfin-cache
+          persistentVolumeClaim:
+            claimName: jellyfin-cache
+        # - name: jellyfin-claim2
+        #   persistentVolumeClaim:
+        #     claimName: jellyfin-claim2
+        # - name: jellyfin-claim3
+        #   persistentVolumeClaim:
+        #     claimName: jellyfin-claim3
+        # - name: jellyfin-claim4
+        #   persistentVolumeClaim:
+        #     claimName: jellyfin-claim4
+        # - name: jellyfin-claim5
+        #   persistentVolumeClaim:
+        #     claimName: jellyfin-claim5
+        # - name: jellyfin-claim6
+        #   persistentVolumeClaim:
+        #     claimName: jellyfin-claim6
