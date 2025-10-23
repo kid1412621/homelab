@@ -12,6 +12,7 @@ spec:
   hostPath:
     path: /mnt/vault
     type: Directory
+
 ---
 apiVersion: v1
 kind: PersistentVolume
