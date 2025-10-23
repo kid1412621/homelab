@@ -1,14 +1,15 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: service
   labels:
-    app: jellyfin
+    app: sonarr
+  name: service
 spec:
   type: ClusterIP
   selector:
-    app: jellyfin
+    app: sonarr
   ports:
     - name: http
-      port: 8096
-      targetPort: 8096
+      port: 8989
+      targetPort: 8989

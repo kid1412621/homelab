@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: jellyfin
+namespace: bazarr
 
 resources:
 - deployment.yml
@@ -13,7 +13,7 @@ resources:
 configMapGenerator:
 - name: app-config
   literals:
-  - APP_NAME=jellyfin
+  - APP_NAME=bazarr
 
 replacements:
 - source:
@@ -64,13 +64,13 @@ patches:
   patch: |-
     - op: replace
       path: /spec/rules/0/http/paths/0/backend/service/port/number
-      value: 8096
+      value: 6767
     - op: replace
       path: /spec/rules/1/http/paths/0/backend/service/port/number
-      value: 8096
+      value: 6767
 
 labels:
 - includeSelectors: true
   pairs:
-    app: jellyfin
+    app: bazarr
     app.kubernetes.io/managed-by: kustomize

@@ -2,19 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    service: jellyfin
-  name: jellyfin
+    app: jellyfin
+  name: app
+  annotations:
+    keel.sh/policy: patch
+    keel.sh/trigger: poll
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: jellyfin
+      app: jellyfin
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        service: jellyfin
+        app: jellyfin
     spec:
       containers:
         - env:
@@ -36,39 +39,26 @@ spec:
               memory: 256Mi
           volumeMounts:
             - mountPath: /config
-              name: jellyfin-config
+              name: config
             - mountPath: /cache
-              name: jellyfin-cache
-            # - mountPath: /movies
-            #   name: jellyfin-claim2
-            # - mountPath: /movies2
-            #   name: jellyfin-claim3
-            # - mountPath: /shows
-            #   name: jellyfin-claim4
-            # - mountPath: /shows2
-            #   name: jellyfin-claim5
-            # - mountPath: /archive
-            #   name: jellyfin-claim6
+              name: cache
+            - mountPath: /archive
+              name: archive
+            - mountPath: /vault
+              name: vault
       restartPolicy: Always
       volumes:
-        - name: jellyfin-config
+        - name: config
           persistentVolumeClaim:
-            claimName: jellyfin-config
-        - name: jellyfin-cache
+            claimName: config
+        - name: cache
           persistentVolumeClaim:
-            claimName: jellyfin-cache
-        # - name: jellyfin-claim2
-        #   persistentVolumeClaim:
-        #     claimName: jellyfin-claim2
-        # - name: jellyfin-claim3
-        #   persistentVolumeClaim:
-        #     claimName: jellyfin-claim3
-        # - name: jellyfin-claim4
-        #   persistentVolumeClaim:
-        #     claimName: jellyfin-claim4
-        # - name: jellyfin-claim5
-        #   persistentVolumeClaim:
-        #     claimName: jellyfin-claim5
-        # - name: jellyfin-claim6
-        #   persistentVolumeClaim:
-        #     claimName: jellyfin-claim6
+            claimName: cache
+        - name: archive
+          hostPath:
+            path: /mnt/archive
+            type: Directory
+        - name: vault
+          hostPath:
+            path: /mnt/vault
+            type: Directory

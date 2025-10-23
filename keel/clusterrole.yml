@@ -1,0 +1,19 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: keel
+rules:
+  # Manage workload resources (Deployments, StatefulSets, DaemonSets, ReplicaSets)
+  - apiGroups: ["apps", "extensions"]
+    resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+
+  # Read-only access to pods and events for status / health
+  - apiGroups: [""]
+    resources: ["pods", "events", "namespaces"]
+    verbs: ["get", "list", "watch"]
+
+  # Read access to Secrets/ConfigMaps so Keel can inspect registries or config if needed
+  - apiGroups: [""]
+    resources: ["secrets", "configmaps"]
+    verbs: ["get", "list", "watch"]
