@@ -21,31 +21,3 @@ spec:
     requests:
       storage: 300Mi
 
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: archive
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: das
-  resources:
-    requests:
-      storage: 200Gi
-  volumeName: archive
-
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: vault
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: das
-  resources:
-    requests:
-      storage: 900Gi
-  volumeName: vault
-

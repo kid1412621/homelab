@@ -52,8 +52,10 @@ spec:
           persistentVolumeClaim:
             claimName: cache
         - name: archive
-          persistentVolumeClaim:
-            claimName: archive
+          hostPath:
+            path: /mnt/archive
+            type: Directory
         - name: vault
-          persistentVolumeClaim:
-            claimName: vault
+          hostPath:
+            path: /mnt/vault
+            type: Directory
