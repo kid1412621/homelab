@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  labels:
+    app: radarr
+  annotations:
+    spec.ingressClassName: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: "web,websecure"
+spec:
+  #tls:
+  #  - hosts:
+  #      - radarr.nuc.lan
+  #    secretName: radarr-tls
+  rules:
+    - host: radarr.nuc.lan
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: service
+                port:
+                  number: 7878
+    - host: radarr.nanova.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: service
+                port:
+                  number: 7878
