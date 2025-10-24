@@ -6,12 +6,12 @@ metadata:
     app: jellyfin
   annotations:
     kubernetes.io/ingress.class: "traefik"
-    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+    traefik.ingress.kubernetes.io/router.entrypoints: "web,websecure"
 spec:
-  tls:
-    - hosts:
-        - jellyfin.nuc.lan
-      secretName: jellyfin-tls
+  #tls:
+  #  - hosts:
+  #      - jellyfin.nuc.lan
+  #    secretName: jellyfin-tls
   rules:
     - host: jellyfin.nuc.lan
       http:
