@@ -23,3 +23,14 @@ spec:
                 name: service
                 port:
                   number: 8096
+    - host: jellyfin.nanova.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: service
+                port:
+                  number: 8096
+
