@@ -3,23 +3,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: radarr
+    app: prowlarr
   name: app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: radarr
+      app: prowlarr
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: radarr
+        app: prowlarr
     spec:
       containers:
-        - name: radarr
-          image: lscr.io/linuxserver/radarr:latest
+        - name: prowlarr
+          image: lscr.io/linuxserver/prowlarr:latest
           imagePullPolicy: Always
           env:
             - name: PGID
@@ -29,7 +29,7 @@ spec:
             - name: TZ
               value: Asia/Chongqing
           ports:
-            - containerPort: 7878
+            - containerPort: 9696
               protocol: TCP
           resources:
             requests:
@@ -41,26 +41,8 @@ spec:
           volumeMounts:
             - mountPath: /config
               name: config
-            - mountPath: /vault
-              name: vault
-            - mountPath: /archive
-              name: archive
-            - mountPath: /downloads
-              name: downloads
       restartPolicy: Always
       volumes:
         - name: config
           persistentVolumeClaim:
             claimName: config
-        - name: downloads
-          hostPath:
-            path: /home/kid/downloads
-            type: Directory
-        - name: vault
-          hostPath:
-            path: /mnt/vault
-            type: Directory
-        - name: archive
-          hostPath:
-            path: /mnt/archive
-            type: Directory

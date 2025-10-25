@@ -64,4 +64,3 @@ spec:
           hostPath:
             path: /mnt/archive
             type: Directory
-

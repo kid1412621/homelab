@@ -3,23 +3,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: radarr
+    app: bazarr
   name: app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: radarr
+      app: bazarr
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: radarr
+        app: bazarr
     spec:
       containers:
-        - name: radarr
-          image: lscr.io/linuxserver/radarr:latest
+        - name: bazarr
+          image: lscr.io/linuxserver/bazarr:latest
           imagePullPolicy: Always
           env:
             - name: PGID
@@ -29,7 +29,7 @@ spec:
             - name: TZ
               value: Asia/Chongqing
           ports:
-            - containerPort: 7878
+            - containerPort: 6767
               protocol: TCP
           resources:
             requests:
@@ -45,17 +45,11 @@ spec:
               name: vault
             - mountPath: /archive
               name: archive
-            - mountPath: /downloads
-              name: downloads
       restartPolicy: Always
       volumes:
         - name: config
           persistentVolumeClaim:
             claimName: config
-        - name: downloads
-          hostPath:
-            path: /home/kid/downloads
-            type: Directory
         - name: vault
           hostPath:
             path: /mnt/vault
