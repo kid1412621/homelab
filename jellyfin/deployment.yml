@@ -5,8 +5,9 @@ metadata:
     app: jellyfin
   name: app
   annotations:
-    keel.sh/policy: patch
+    keel.sh/policy: minor
     keel.sh/trigger: poll
+    keel.sh/approvals: "1" 
 spec:
   replicas: 1
   selector:
