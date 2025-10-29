@@ -13,7 +13,7 @@ resources:
 configMapGenerator:
 - name: app-config
   literals:
-  - APP_NAME=qbittorrent
+  - APP_NAME=qb
 
 replacements:
 - source:

@@ -6,11 +6,80 @@ resources:
 - clusterrole.yml
 - clusterrolebinding.yml
 - deployment.yml
+- service.yml
+- ../base
 
 namespace: keel
+
+secretGenerator:
+- name: keel-auth
+  envs:
+  - .env
+  options:
+    disableNameSuffixHash: true
 
 labels:
 - includeSelectors: true
   pairs:
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/name: keel
+    app: keel
+
+configMapGenerator:
+- name: app-config
+  literals:
+  - APP_NAME=keel
+
+replacements:
+- source:
+    kind: ConfigMap
+    name: app-config
+    fieldPath: data.APP_NAME
+  targets:
+  - select:
+      kind: Ingress
+      name: ingress
+    fieldPaths:
+    - spec.rules.0.host
+    - spec.rules.1.host
+    options:
+      delimiter: "."
+      index: 0
+- source:
+    kind: ConfigMap
+    name: domain-config
+    fieldPath: data.LAN_DOMAIN
+  targets:
+  - select:
+      kind: Ingress
+      name: ingress
+    fieldPaths:
+    - spec.rules.0.host
+    options:
+      delimiter: "."
+      index: 1
+- source:
+    kind: ConfigMap
+    name: domain-config
+    fieldPath: data.WAN_DOMAIN
+  targets:
+  - select:
+      kind: Ingress
+      name: ingress
+    fieldPaths:
+    - spec.rules.1.host
+    options:
+      delimiter: "."
+      index: 1
+
+patches:
+- target:
+    kind: Ingress
+    name: ingress
+  patch: |-
+    - op: replace
+      path: /spec/rules/0/http/paths/0/backend/service/port/number
+      value: 9300
+    - op: replace
+      path: /spec/rules/1/http/paths/0/backend/service/port/number
+      value: 9300

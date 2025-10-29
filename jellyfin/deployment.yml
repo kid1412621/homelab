@@ -7,6 +7,7 @@ metadata:
   annotations:
     keel.sh/policy: minor
     keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 5h"
     keel.sh/approvals: "1" 
 spec:
   replicas: 1

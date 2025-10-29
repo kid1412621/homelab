@@ -27,6 +27,16 @@ spec:
               value: "1"
             - name: PROJECT_ID
               value: "homelab"
+            - name: BASIC_AUTH_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keel-auth
+                  key: KEEL_BASIC_AUTH_USER
+            - name: BASIC_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keel-auth
+                  key: KEEL_BASIC_AUTH_PASSWORD
           ports:
             - containerPort: 9300
           resources:
