@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: miniflux
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: miniflux
+  template:
+    metadata:
+      labels:
+        app: miniflux
+    spec:
+      containers:
+        - name: miniflux
+          image: miniflux/miniflux:latest
+          envFrom:
+            - secretRef:
+                name: miniflux-secret
+            - secretRef:
+                name: postgres-secret
+          env:
+            - name: DATABASE_URL
+              value: "postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:5432/miniflux?sslmode=disable"
+            - name: CREATE_ADMIN
+              value: "1"
+            - name: RUN_MIGRATIONS
+              value: "1"
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            exec:
+              command:
+              - /usr/bin/miniflux
+              - -healthcheck
+              - auto
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+              - /usr/bin/miniflux
+              - -healthcheck
+              - auto
+            initialDelaySeconds: 30
+            periodSeconds: 10
+        - name: postgres
+          image: postgres:alpine
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          env:
+            - name: POSTGRES_DB
+              value: miniflux
+            - name: PGDATA
+              value: /data
+          ports:
+            - containerPort: 5432
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - pg_isready -U $POSTGRES_USER
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - pg_isready -U $POSTGRES_USER
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: data

@@ -28,13 +28,13 @@ labels:
 configMapGenerator:
 - name: app-config
   literals:
-  - APP_NAME=keel
+  - APP_SUBDOMAIN=keel
 
 replacements:
 - source:
     kind: ConfigMap
     name: app-config
-    fieldPath: data.APP_NAME
+    fieldPath: data.APP_SUBDOMAIN
   targets:
   - select:
       kind: Ingress

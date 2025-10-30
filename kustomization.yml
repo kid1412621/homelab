@@ -8,6 +8,7 @@ resources:
 - bazarr
 - prowlarr
 - qbittorrent
+- miniflux
 
 labels:
 - includeSelectors: true

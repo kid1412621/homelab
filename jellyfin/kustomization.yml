@@ -13,13 +13,13 @@ resources:
 configMapGenerator:
 - name: app-config
   literals:
-  - APP_NAME=jellyfin
+  - APP_SUBDOMAIN=jellyfin
 
 replacements:
 - source:
     kind: ConfigMap
     name: app-config
-    fieldPath: data.APP_NAME
+    fieldPath: data.APP_SUBDOMAIN
   targets:
   - select:
       kind: Ingress
