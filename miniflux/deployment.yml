@@ -90,6 +90,17 @@ spec:
           volumeMounts:
             - name: postgres-storage
               mountPath: /data
+        - name: nextflux
+          image: electh/nextflux:latest
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
       volumes:
         - name: postgres-storage
           persistentVolumeClaim:

@@ -7,6 +7,11 @@ spec:
   selector:
     app: miniflux
   ports:
-    - protocol: TCP
+    - name: miniflux
+      protocol: TCP
       port: 80
       targetPort: 8080
+    - name: nextflux
+      protocol: TCP
+      port: 8300
+      targetPort: 3000

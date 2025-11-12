@@ -22,6 +22,9 @@ configMapGenerator:
 - name: app-config
   literals:
   - APP_SUBDOMAIN=rss
+- name: nextflux-app-config
+  literals:
+  - APP_SUBDOMAIN=flux
 
 replacements:
 - source:
@@ -40,6 +43,20 @@ replacements:
       index: 0
 - source:
     kind: ConfigMap
+    name: nextflux-app-config
+    fieldPath: data.APP_SUBDOMAIN
+  targets:
+  - select:
+      kind: Ingress
+      name: ingress
+    fieldPaths:
+    - spec.rules.2.host
+    - spec.rules.3.host
+    options:
+      delimiter: "."
+      index: 0
+- source:
+    kind: ConfigMap
     name: domain-config
     fieldPath: data.LAN_DOMAIN
   targets:
@@ -48,6 +65,7 @@ replacements:
       name: ingress
     fieldPaths:
     - spec.rules.0.host
+    - spec.rules.2.host
     options:
       delimiter: "."
       index: 1
@@ -61,6 +79,7 @@ replacements:
       name: ingress
     fieldPaths:
     - spec.rules.1.host
+    - spec.rules.3.host
     options:
       delimiter: "."
       index: 1
@@ -76,6 +95,32 @@ patches:
     - op: replace
       path: /spec/rules/1/http/paths/0/backend/service/port/number
       value: 80
+    - op: add
+      path: /spec/rules/-
+      value:
+        host: dummy-nextflux-lan
+        http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: service
+                  port:
+                    number: 8300
+    - op: add
+      path: /spec/rules/-
+      value:
+        host: dummy-nextflux-wan
+        http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: service
+                  port:
+                    number: 8300
 
 labels:
 - includeSelectors: true
