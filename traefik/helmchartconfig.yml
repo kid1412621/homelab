@@ -6,12 +6,5 @@ metadata:
 spec:
   valuesContent: |-
     additionalArguments:
-      - "--api"
-      - "--api.dashboard=true"
       - "--api.insecure=true"
-    ports:
-      traefik:
-        expose: true
-    providers:
-      kubernetesCRD:
-        allowCrossNamespace: true
+      - "--api.dashboard=true"
