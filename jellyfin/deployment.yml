@@ -8,7 +8,7 @@ metadata:
     keel.sh/policy: minor
     keel.sh/trigger: poll
     keel.sh/pollSchedule: "@every 5h"
-    keel.sh/approvals: "1" 
+    keel.sh/approvals: "1"
 spec:
   replicas: 1
   selector:
@@ -22,16 +22,16 @@ spec:
         app: jellyfin
     spec:
       containers:
-        - env:
-            - name: JELLYFIN_PublishedServerUrl
-              value: https://jellyfin.nuc.lan
-          image: jellyfin/jellyfin
+        - image: jellyfin/jellyfin:latest
           name: jellyfin
           securityContext:
             runAsGroup: 1000
             runAsUser: 1000
           ports:
             - containerPort: 8096
+              protocol: TCP
+            - containerPort: 7359
+              protocol: UDP
           resources:
             requests:
               cpu: "1"
@@ -48,6 +48,8 @@ spec:
               name: archive
             - mountPath: /vault
               name: vault
+            - mountPath: /tv
+              name: tv
       restartPolicy: Always
       volumes:
         - name: config
@@ -63,4 +65,8 @@ spec:
         - name: vault
           hostPath:
             path: /mnt/vault
+            type: Directory
+        - name: tv
+          hostPath:
+            path: /mnt/tv
             type: Directory

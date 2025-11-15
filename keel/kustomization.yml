@@ -1,85 +1,85 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- namespace.yml
-- serviceaccount.yml
-- clusterrole.yml
-- clusterrolebinding.yml
-- deployment.yml
-- service.yml
-- ../base
+  - namespace.yml
+  - serviceaccount.yml
+  - clusterrole.yml
+  - clusterrolebinding.yml
+  - deployment.yml
+  - service.yml
+  - ../base
 
 namespace: keel
 
 secretGenerator:
-- name: keel-auth
-  envs:
-  - .env
-  options:
-    disableNameSuffixHash: true
+  - name: keel-auth
+    envs:
+      - .env
+    options:
+      disableNameSuffixHash: true
 
 labels:
-- includeSelectors: true
-  pairs:
-    app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: keel
-    app: keel
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/name: keel
+      app: keel
 
 configMapGenerator:
-- name: app-config
-  literals:
-  - APP_SUBDOMAIN=keel
+  - name: app-config
+    literals:
+      - APP_SUBDOMAIN=keel
+      - APP_PORT=9300
 
 replacements:
-- source:
-    kind: ConfigMap
-    name: app-config
-    fieldPath: data.APP_SUBDOMAIN
-  targets:
-  - select:
-      kind: Ingress
-      name: ingress
-    fieldPaths:
-    - spec.rules.0.host
-    - spec.rules.1.host
-    options:
-      delimiter: "."
-      index: 0
-- source:
-    kind: ConfigMap
-    name: domain-config
-    fieldPath: data.LAN_DOMAIN
-  targets:
-  - select:
-      kind: Ingress
-      name: ingress
-    fieldPaths:
-    - spec.rules.0.host
-    options:
-      delimiter: "."
-      index: 1
-- source:
-    kind: ConfigMap
-    name: domain-config
-    fieldPath: data.WAN_DOMAIN
-  targets:
-  - select:
-      kind: Ingress
-      name: ingress
-    fieldPaths:
-    - spec.rules.1.host
-    options:
-      delimiter: "."
-      index: 1
-
-patches:
-- target:
-    kind: Ingress
-    name: ingress
-  patch: |-
-    - op: replace
-      path: /spec/rules/0/http/paths/0/backend/service/port/number
-      value: 9300
-    - op: replace
-      path: /spec/rules/1/http/paths/0/backend/service/port/number
-      value: 9300
+  - source:
+      kind: ConfigMap
+      name: app-config
+      fieldPath: data.APP_SUBDOMAIN
+    targets:
+      - select:
+          kind: Ingress
+          name: ingress
+        fieldPaths:
+          - spec.rules.0.host
+          - spec.rules.1.host
+        options:
+          delimiter: "."
+          index: 0
+  - source:
+      kind: ConfigMap
+      name: domain-config
+      fieldPath: data.LAN_DOMAIN
+    targets:
+      - select:
+          kind: Ingress
+          name: ingress
+        fieldPaths:
+          - spec.rules.0.host
+        options:
+          delimiter: "."
+          index: 1
+  - source:
+      kind: ConfigMap
+      name: domain-config
+      fieldPath: data.WAN_DOMAIN
+    targets:
+      - select:
+          kind: Ingress
+          name: ingress
+        fieldPaths:
+          - spec.rules.1.host
+        options:
+          delimiter: "."
+          index: 1
+  - source:
+      kind: ConfigMap
+      name: app-config
+      fieldPath: data.APP_PORT
+    targets:
+      - select:
+          kind: Ingress
+          name: ingress
+        fieldPaths:
+          - spec.rules.0.http.paths.0.backend.service.port.number
+          - spec.rules.1.http.paths.0.backend.service.port.number

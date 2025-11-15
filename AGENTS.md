@@ -190,3 +190,19 @@ kubectl get pvc -n <namespace>
 * **Replacements**: Injects subdomain and domain values into ingresses
 * **Patches**: Customizes base ingress with app-specific service ports
 * **Labels**: Consistent labeling across all resources
+
+## Format
+
+## Filename
+
+yml is prefered over yaml, for the filename suffix.
+
+### Indentation
+
+The yaml list indenation should follow this pattern:
+```yaml
+items:
+  - item1
+  - item2
+  - item3
+```

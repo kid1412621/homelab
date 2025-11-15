@@ -47,6 +47,8 @@ spec:
               name: config
             - mountPath: /vault
               name: vault
+            - mountPath: /tv
+              name: tv
             - mountPath: /archive
               name: archive
             - mountPath: /downloads
@@ -67,4 +69,8 @@ spec:
         - name: archive
           hostPath:
             path: /mnt/archive
+            type: Directory
+        - name: tv
+          hostPath:
+            path: /mnt/tv
             type: Directory

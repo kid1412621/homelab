@@ -45,6 +45,8 @@ spec:
           volumeMounts:
             - mountPath: /config
               name: config
+            - mountPath: /tv
+              name: tv
             - mountPath: /vault
               name: vault
             - mountPath: /archive
@@ -61,4 +63,8 @@ spec:
         - name: archive
           hostPath:
             path: /mnt/archive
+            type: Directory
+        - name: tv
+          hostPath:
+            path: /mnt/tv
             type: Directory

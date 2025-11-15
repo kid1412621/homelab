@@ -2,17 +2,17 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- ingress.yml
+  - ingress.yml
 
 configMapGenerator:
-- name: domain-config
-  envs:
-  - .env
+  - name: domain-config
+    envs:
+      - .env
 
 generatorOptions:
   disableNameSuffixHash: true
 
 labels:
-- includeSelectors: true
-  pairs:
-    app.kubernetes.io/managed-by: kustomize
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/managed-by: kustomize
