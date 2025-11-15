@@ -5,5 +5,19 @@ namespace: traefik
 
 resources:
   - namespace.yml
-  - dashboard.yml
   - helmchartconfig.yml
+  - basic-auth-middleware.yml
+  - dashboard.yml
+
+# configMapGenerator:
+#   - name: app-config
+#     literals:
+#       - APP_SUBDOMAIN=traefik
+
+secretGenerator:
+  - name: traefik-basic-auth
+    type: Opaque
+    envs:
+      - .env
+    options:
+      disableNameSuffixHash: true
