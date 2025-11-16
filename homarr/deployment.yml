@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: homarr
+  name: app
+  annotations:
+    keel.sh/policy: minor
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 5h"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homarr
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: homarr
+    spec:
+      containers:
+        - image: ghcr.io/homarr-labs/homarr:latest
+          name: homarr
+          ports:
+            - containerPort: 7575
+              protocol: TCP
+          env:
+            - name: TZ
+              value: Asia/Chongqing
+            - name: LOG_LEVEL
+              value: info
+            - name: SECRET_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: db-encryption
+                  key: db-encryption-key
+          resources:
+            requests:
+              cpu: "500m"
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /appdata
+              name: db
+      restartPolicy: Always
+      volumes:
+        - name: db
+          persistentVolumeClaim:
+            claimName: db

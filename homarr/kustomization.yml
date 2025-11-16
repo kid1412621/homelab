@@ -1,0 +1,83 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: homarr
+
+resources:
+  - namespace.yml
+  - deployment.yml
+  - pvc.yml
+  - service.yml
+  - ../base
+
+secretGenerator:
+  - name: db-encryption
+    envs:
+      - .env
+    options:
+      disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: app-config
+    literals:
+      - APP_SUBDOMAIN=homarr
+      - APP_PORT=7575
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: app-config
+      fieldPath: data.APP_SUBDOMAIN
+    targets:
+      - select:
+          kind: Ingress
+          name: ingress
+        fieldPaths:
+          - spec.rules.0.host
+          - spec.rules.1.host
+        options:
+          delimiter: "."
+          index: 0
+  - source:
+      kind: ConfigMap
+      name: domain-config
+      fieldPath: data.LAN_DOMAIN
+    targets:
+      - select:
+          kind: Ingress
+          name: ingress
+        fieldPaths:
+          - spec.rules.0.host
+        options:
+          delimiter: "."
+          index: 1
+  - source:
+      kind: ConfigMap
+      name: domain-config
+      fieldPath: data.WAN_DOMAIN
+    targets:
+      - select:
+          kind: Ingress
+          name: ingress
+        fieldPaths:
+          - spec.rules.1.host
+        options:
+          delimiter: "."
+          index: 1
+  - source:
+      kind: ConfigMap
+      name: app-config
+      fieldPath: data.APP_PORT
+    targets:
+      - select:
+          kind: Ingress
+          name: ingress
+        fieldPaths:
+          - spec.rules.0.http.paths.0.backend.service.port.number
+          - spec.rules.1.http.paths.0.backend.service.port.number
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app: homarr
+      app.kubernetes.io/managed-by: kustomize

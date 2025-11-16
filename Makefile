@@ -45,6 +45,7 @@ apply-apps:
 	kubectl apply -k radarr/ &
 	kubectl apply -k bazarr/ &
 	kubectl apply -k prowlarr/ &
+	kubectl apply -k homarr/ &
 	kubectl apply -k qbittorrent/ &
 	kubectl apply -k jellyfin/ &
 	kubectl apply -k homeassistant/ &
@@ -61,6 +62,7 @@ restart-apps:
 	kubectl rollout restart -n radarr deployment/radarr
 	kubectl rollout restart -n bazarr deployment/bazarr
 	kubectl rollout restart -n prowlarr deployment/prowlarr
+	kubectl rollout restart -n homarr deployment/homarr
 	kubectl rollout restart -n qbittorrent deployment/qbittorrent
 	kubectl rollout restart -n jellyfin deployment/jellyfin
 	kubectl rollout restart -n homeassistant deployment/homeassistant

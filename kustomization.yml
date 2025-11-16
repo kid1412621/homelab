@@ -12,6 +12,7 @@ resources:
 - qbittorrent
 - miniflux
 - homeassistant
+- homarr
 
 labels:
 - includeSelectors: true
