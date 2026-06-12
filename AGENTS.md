@@ -22,7 +22,7 @@ The repository is structured with a base configuration and overlays for each app
 
 ### Base Configuration
 The `base/` directory contains shared resources used by all applications:
-- `ingress.yml` - Template for ingress resources with dual-domain support (LAN and WAN)
+- `ingressroute.yml` - Template for Traefik IngressRoute resources with dual-domain support (LAN and WAN)
 - `kustomization.yml` - Base kustomization that generates domain config from `.env`
 - `.env` - Domain configuration (LAN_DOMAIN and WAN_DOMAIN)
 
@@ -42,7 +42,7 @@ Applications are accessible via two domains:
 
 Each application's `kustomization.yml`:
 1. Generates an `app-config` ConfigMap with the APP_SUBDOMAIN
-2. Uses Kustomize replacements to inject subdomains into ingress rules
+2. Uses Kustomize replacements to inject subdomains into IngressRoute rules
 3. Injects the domain config from the base
 
 ### Traefik Ingress Controller
@@ -187,8 +187,8 @@ kubectl get pvc -n <namespace>
 * **Resource references**: Apps reference `../base` for shared configuration
 * **ConfigMapGenerator**: Generates ConfigMaps from literals and files
 * **SecretGenerator**: Generates Secrets from .env files
-* **Replacements**: Injects subdomain and domain values into ingresses
-* **Patches**: Customizes base ingress with app-specific service ports
+* **Replacements**: Injects subdomain and domain values into IngressRoutes
+* **Patches**: Customizes base IngressRoute with app-specific service ports
 * **Labels**: Consistent labeling across all resources
 
 ## Format

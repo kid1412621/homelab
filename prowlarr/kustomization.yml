@@ -15,6 +15,8 @@ configMapGenerator:
     literals:
       - APP_SUBDOMAIN=prowlarr
       - APP_PORT=9696
+      - LAN_HOST=app-name.lan-domain
+      - WAN_HOST=app-name.wan-domain
 
 replacements:
   - source:
@@ -23,11 +25,11 @@ replacements:
       fieldPath: data.APP_SUBDOMAIN
     targets:
       - select:
-          kind: Ingress
-          name: ingress
+          kind: ConfigMap
+          name: app-config
         fieldPaths:
-          - spec.rules.0.host
-          - spec.rules.1.host
+          - data.LAN_HOST
+          - data.WAN_HOST
         options:
           delimiter: "."
           index: 0
@@ -37,10 +39,10 @@ replacements:
       fieldPath: data.LAN_DOMAIN
     targets:
       - select:
-          kind: Ingress
-          name: ingress
+          kind: ConfigMap
+          name: app-config
         fieldPaths:
-          - spec.rules.0.host
+          - data.LAN_HOST
         options:
           delimiter: "."
           index: 1
@@ -50,12 +52,38 @@ replacements:
       fieldPath: data.WAN_DOMAIN
     targets:
       - select:
-          kind: Ingress
-          name: ingress
+          kind: ConfigMap
+          name: app-config
         fieldPaths:
-          - spec.rules.1.host
+          - data.WAN_HOST
         options:
           delimiter: "."
+          index: 1
+  - source:
+      kind: ConfigMap
+      name: app-config
+      fieldPath: data.LAN_HOST
+    targets:
+      - select:
+          kind: IngressRoute
+          name: ingress-route
+        fieldPaths:
+          - spec.routes.0.match
+        options:
+          delimiter: "`"
+          index: 1
+  - source:
+      kind: ConfigMap
+      name: app-config
+      fieldPath: data.WAN_HOST
+    targets:
+      - select:
+          kind: IngressRoute
+          name: ingress-route
+        fieldPaths:
+          - spec.routes.1.match
+        options:
+          delimiter: "`"
           index: 1
   - source:
       kind: ConfigMap
@@ -63,11 +91,11 @@ replacements:
       fieldPath: data.APP_PORT
     targets:
       - select:
-          kind: Ingress
-          name: ingress
+          kind: IngressRoute
+          name: ingress-route
         fieldPaths:
-          - spec.rules.0.http.paths.0.backend.service.port.number
-          - spec.rules.1.http.paths.0.backend.service.port.number
+          - spec.routes.0.services.0.port
+          - spec.routes.1.services.0.port
 
 labels:
   - includeSelectors: true

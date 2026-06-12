@@ -22,9 +22,13 @@ configMapGenerator:
   - name: app-config
     literals:
       - APP_SUBDOMAIN=rss
+      - LAN_HOST=app-name.lan-domain
+      - WAN_HOST=app-name.wan-domain
   - name: nextflux-app-config
     literals:
       - APP_SUBDOMAIN=flux
+      - LAN_HOST=app-name.lan-domain
+      - WAN_HOST=app-name.wan-domain
 
 replacements:
   - source:
@@ -33,11 +37,11 @@ replacements:
       fieldPath: data.APP_SUBDOMAIN
     targets:
       - select:
-          kind: Ingress
-          name: ingress
+          kind: ConfigMap
+          name: app-config
         fieldPaths:
-          - spec.rules.0.host
-          - spec.rules.1.host
+          - data.LAN_HOST
+          - data.WAN_HOST
         options:
           delimiter: "."
           index: 0
@@ -47,11 +51,11 @@ replacements:
       fieldPath: data.APP_SUBDOMAIN
     targets:
       - select:
-          kind: Ingress
-          name: ingress
+          kind: ConfigMap
+          name: nextflux-app-config
         fieldPaths:
-          - spec.rules.2.host
-          - spec.rules.3.host
+          - data.LAN_HOST
+          - data.WAN_HOST
         options:
           delimiter: "."
           index: 0
@@ -61,11 +65,18 @@ replacements:
       fieldPath: data.LAN_DOMAIN
     targets:
       - select:
-          kind: Ingress
-          name: ingress
+          kind: ConfigMap
+          name: app-config
         fieldPaths:
-          - spec.rules.0.host
-          - spec.rules.2.host
+          - data.LAN_HOST
+        options:
+          delimiter: "."
+          index: 1
+      - select:
+          kind: ConfigMap
+          name: nextflux-app-config
+        fieldPaths:
+          - data.LAN_HOST
         options:
           delimiter: "."
           index: 1
@@ -75,52 +86,101 @@ replacements:
       fieldPath: data.WAN_DOMAIN
     targets:
       - select:
-          kind: Ingress
-          name: ingress
+          kind: ConfigMap
+          name: app-config
         fieldPaths:
-          - spec.rules.1.host
-          - spec.rules.3.host
+          - data.WAN_HOST
         options:
           delimiter: "."
+          index: 1
+      - select:
+          kind: ConfigMap
+          name: nextflux-app-config
+        fieldPaths:
+          - data.WAN_HOST
+        options:
+          delimiter: "."
+          index: 1
+  - source:
+      kind: ConfigMap
+      name: app-config
+      fieldPath: data.LAN_HOST
+    targets:
+      - select:
+          kind: IngressRoute
+          name: ingress-route
+        fieldPaths:
+          - spec.routes.0.match
+        options:
+          delimiter: "`"
+          index: 1
+  - source:
+      kind: ConfigMap
+      name: app-config
+      fieldPath: data.WAN_HOST
+    targets:
+      - select:
+          kind: IngressRoute
+          name: ingress-route
+        fieldPaths:
+          - spec.routes.1.match
+        options:
+          delimiter: "`"
+          index: 1
+  - source:
+      kind: ConfigMap
+      name: nextflux-app-config
+      fieldPath: data.LAN_HOST
+    targets:
+      - select:
+          kind: IngressRoute
+          name: ingress-route
+        fieldPaths:
+          - spec.routes.2.match
+        options:
+          delimiter: "`"
+          index: 1
+  - source:
+      kind: ConfigMap
+      name: nextflux-app-config
+      fieldPath: data.WAN_HOST
+    targets:
+      - select:
+          kind: IngressRoute
+          name: ingress-route
+        fieldPaths:
+          - spec.routes.3.match
+        options:
+          delimiter: "`"
           index: 1
 
 patches:
   - target:
-      kind: Ingress
-      name: ingress
+      kind: IngressRoute
+      name: ingress-route
     patch: |-
       - op: replace
-        path: /spec/rules/0/http/paths/0/backend/service/port/number
+        path: /spec/routes/0/services/0/port
         value: 80
       - op: replace
-        path: /spec/rules/1/http/paths/0/backend/service/port/number
+        path: /spec/routes/1/services/0/port
         value: 80
       - op: add
-        path: /spec/rules/-
+        path: /spec/routes/-
         value:
-          host: dummy-nextflux-lan
-          http:
-            paths:
-              - path: /
-                pathType: Prefix
-                backend:
-                  service:
-                    name: service
-                    port:
-                      number: 8300
+          match: Host(`dummy-nextflux-lan`)
+          kind: Rule
+          services:
+            - name: service
+              port: 8300
       - op: add
-        path: /spec/rules/-
+        path: /spec/routes/-
         value:
-          host: dummy-nextflux-wan
-          http:
-            paths:
-              - path: /
-                pathType: Prefix
-                backend:
-                  service:
-                    name: service
-                    port:
-                      number: 8300
+          match: Host(`dummy-nextflux-wan`)
+          kind: Rule
+          services:
+            - name: service
+              port: 8300
 
 labels:
   - includeSelectors: true
