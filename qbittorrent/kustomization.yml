@@ -21,6 +21,16 @@ configMapGenerator:
 replacements:
   - source:
       kind: ConfigMap
+      name: domain-config
+      fieldPath: data.DOWNLOADS_PATH
+    targets:
+      - select:
+          kind: Deployment
+          name: app
+        fieldPaths:
+          - spec.template.spec.volumes.[name=downloads].hostPath.path
+  - source:
+      kind: ConfigMap
       name: app-config
       fieldPath: data.APP_SUBDOMAIN
     targets:

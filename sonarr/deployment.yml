@@ -61,7 +61,7 @@ spec:
             claimName: config
         - name: downloads
           hostPath:
-            path: /home/kid/downloads
+            path: /replace/downloads
             type: Directory
         - name: vault
           hostPath:

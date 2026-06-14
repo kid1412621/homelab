@@ -42,6 +42,7 @@ apply-keel:
 # Apply all applications (excluding system components)
 apply-apps:
 	kubectl apply -k sonarr/ &
+	kubectl apply -k lidarr/ &
 	kubectl apply -k radarr/ &
 	kubectl apply -k bazarr/ &
 	kubectl apply -k prowlarr/ &
@@ -59,6 +60,7 @@ apply-system-upgrade:
 # Rollout restart all apps
 restart-apps:
 	kubectl rollout restart -n sonarr deployment/sonarr
+	kubectl rollout restart -n lidarr deployment/lidarr
 	kubectl rollout restart -n radarr deployment/radarr
 	kubectl rollout restart -n bazarr deployment/bazarr
 	kubectl rollout restart -n prowlarr deployment/prowlarr

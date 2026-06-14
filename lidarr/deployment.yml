@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: radarr
+    app: lidarr
   name: app
   annotations:
     keel.sh/policy: minor
@@ -14,17 +14,17 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: radarr
+      app: lidarr
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: radarr
+        app: lidarr
     spec:
       containers:
-        - name: radarr
-          image: lscr.io/linuxserver/radarr:latest
+        - name: lidarr
+          image: lscr.io/linuxserver/lidarr:latest
           imagePullPolicy: Always
           env:
             - name: PGID
@@ -34,7 +34,7 @@ spec:
             - name: TZ
               value: Asia/Chongqing
           ports:
-            - containerPort: 7878
+            - containerPort: 8686
               protocol: TCP
           resources:
             requests:
@@ -46,10 +46,8 @@ spec:
           volumeMounts:
             - mountPath: /config
               name: config
-            - mountPath: /vault
-              name: vault
-            - mountPath: /archive
-              name: archive
+            - mountPath: /music
+              name: music
             - mountPath: /downloads
               name: downloads
       restartPolicy: Always
@@ -61,11 +59,7 @@ spec:
           hostPath:
             path: /replace/downloads
             type: Directory
-        - name: vault
+        - name: music
           hostPath:
-            path: /mnt/vault
-            type: Directory
-        - name: archive
-          hostPath:
-            path: /mnt/archive
+            path: /mnt/vault/music
             type: Directory

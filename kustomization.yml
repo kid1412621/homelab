@@ -6,6 +6,7 @@ resources:
 - keel
 - jellyfin
 - sonarr
+- lidarr
 - radarr
 - bazarr
 - prowlarr

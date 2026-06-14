@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: sonarr
+namespace: lidarr
 
 resources:
   - deployment.yml
@@ -13,8 +13,8 @@ resources:
 configMapGenerator:
   - name: app-config
     literals:
-      - APP_SUBDOMAIN=sonarr
-      - APP_PORT=8989
+      - APP_SUBDOMAIN=lidarr
+      - APP_PORT=8686
       - LAN_HOST=app-name.lan-domain
       - WAN_HOST=app-name.wan-domain
 
@@ -110,5 +110,5 @@ replacements:
 labels:
   - includeSelectors: true
     pairs:
-      app: sonarr
+      app: lidarr
       app.kubernetes.io/managed-by: kustomize
