@@ -8,6 +8,8 @@ resources:
   - helmchartconfig.yml
   - basic-auth-middleware.yml
   - dashboard.yml
+  - gatewayclass.yml
+  - gateway.yml
 
 # configMapGenerator:
 #   - name: app-config
