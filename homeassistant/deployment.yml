@@ -27,10 +27,10 @@ spec:
             privileged: true
           resources:
             requests:
-              cpu: "1"
+              cpu: "500m"
               memory: 256Mi
             limits:
-              cpu: "2"
+              cpu: "1"
               memory: 1Gi
           ports:
             - name: http
