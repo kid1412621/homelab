@@ -10,6 +10,8 @@ resources:
   - dashboard.yml
   - gatewayclass.yml
   - gateway.yml
+  - gateway-clusterrole.yml
+  - gateway-clusterrolebinding.yml
 
 # configMapGenerator:
 #   - name: app-config

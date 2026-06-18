@@ -5,7 +5,9 @@ metadata:
   namespace: kube-system
 spec:
   valuesContent: |-
-    additionalArguments:
-      - "--api.insecure=true"
-      - "--api.dashboard=true"
-      - "--providers.kubernetesgateway"
+    api:
+      insecure: true
+      dashboard: true
+    providers:
+      kubernetesGateway:
+        enabled: true
