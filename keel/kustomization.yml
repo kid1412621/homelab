@@ -80,34 +80,27 @@ replacements:
       fieldPath: data.LAN_HOST
     targets:
       - select:
-          kind: IngressRoute
-          name: ingress-route
+          kind: HTTPRoute
+          name: http-route
         fieldPaths:
-          - spec.routes.0.match
-        options:
-          delimiter: "`"
-          index: 1
+          - spec.hostnames.0
   - source:
       kind: ConfigMap
       name: app-config
       fieldPath: data.WAN_HOST
     targets:
       - select:
-          kind: IngressRoute
-          name: ingress-route
+          kind: HTTPRoute
+          name: http-route
         fieldPaths:
-          - spec.routes.1.match
-        options:
-          delimiter: "`"
-          index: 1
+          - spec.hostnames.1
   - source:
       kind: ConfigMap
       name: app-config
       fieldPath: data.APP_PORT
     targets:
       - select:
-          kind: IngressRoute
-          name: ingress-route
+          kind: HTTPRoute
+          name: http-route
         fieldPaths:
-          - spec.routes.0.services.0.port
-          - spec.routes.1.services.0.port
+          - spec.rules.0.backendRefs.0.port

@@ -14,7 +14,7 @@ The cluster runs various applications, including:
 
 The repository is structured with a base configuration and overlays for each application.
 
-* **`base/`:** Contains the base Kustomize configuration, including the Ingress controller setup and domain configuration
+* **`base/`:** Contains the shared Kustomize domain configuration
 * **Application directories:** Each application has its own directory containing its Kubernetes manifests (Deployment, Service, PVC, etc.) and a `kustomization.yml` file
 * **`kustomization.yml`:** The root Kustomization file defines all applications to be deployed
 * **`traefik/`:** Traefik ingress controller configuration
@@ -23,7 +23,7 @@ The repository is structured with a base configuration and overlays for each app
 ### Base Configuration
 
 The `base/` directory contains shared resources used by all applications:
-* `ingressroute.yml` - Template for Traefik IngressRoute resources with dual-domain support (LAN and WAN)
+* `httproute.yml` - Shared Gateway API HTTPRoute template with dual-domain support (LAN and WAN)
 * `kustomization.yml` - Base kustomization that generates domain config from `.env`
 * `.env` - Domain configuration (LAN_DOMAIN and WAN_DOMAIN)
 
@@ -33,6 +33,7 @@ Each application follows a consistent pattern:
 * `namespace.yml` - Kubernetes namespace
 * `deployment.yml` - Application deployment
 * `service.yml` - Service definition
+* `httproute.yml` - Additional Gateway API HTTPRoute definitions when an app needs more than the shared base route
 * `pvc.yml` - Persistent volume claim (if needed)
 * `kustomization.yml` - Kustomize configuration
 * `.env` or `.env.example` - Environment-specific configuration
@@ -46,15 +47,19 @@ Applications are accessible via two domains:
 Each application's `kustomization.yml`:
 
 1. Generates an `app-config` ConfigMap with the APP_SUBDOMAIN
-2. Uses Kustomize replacements to inject subdomains into IngressRoute rules
+2. Uses Kustomize replacements to inject LAN and WAN hostnames into the shared `http-route`
 3. Injects the domain config from the base
+4. Injects APP_PORT into the `http-route` backend reference
+5. Adds app-local HTTPRoutes only for extra endpoints, such as Miniflux's `flux` route
 
 ### Traefik Ingress Controller
 
 Traefik is deployed as the ingress controller:
 * `traefik/helmchartconfig.yml` - HelmChartConfig for Traefik configuration
-* `traefik/dashboard.yml` - Traefik dashboard ingress
-* Supports both web (HTTP) and websecure (HTTPS) entrypoints
+* `traefik/gatewayclass.yml` - GatewayClass for the Traefik Gateway controller
+* `traefik/gateway.yml` - Shared `main-gateway` used by application HTTPRoutes
+* `traefik/dashboard.yml` - Traefik dashboard IngressRoute for the `api@internal` TraefikService
+* Application services use Gateway API HTTPRoute resources attached to `traefik/main-gateway`
 
 ### Keel - Automated Updates
 
@@ -184,8 +189,10 @@ kubectl get pvc -n <namespace>
 | bazarr      | bazarr    | Subtitles management |
 | prowlarr    | prowlarr  | Indexer aggregator |
 | qbittorrent | qb        | BitTorrent client |
-| miniflux    | miniflux  | RSS feed reader |
+| miniflux    | rss       | RSS feed reader |
+| nextflux    | flux      | Miniflux companion UI |
 | homeassistant | ha       | Home automation |
+| homarr      | homarr    | Dashboard |
 
 # Development Conventions
 
@@ -211,8 +218,7 @@ kubectl get pvc -n <namespace>
 * **Resource references**: Apps reference `../base` for shared configuration
 * **ConfigMapGenerator**: Generates ConfigMaps from literals and files
 * **SecretGenerator**: Generates Secrets from .env files
-* **Replacements**: Injects subdomain and domain values into IngressRoutes
-* **Patches**: Customizes base IngressRoute with app-specific service ports
+* **Replacements**: Injects subdomain, domain, and service port values into HTTPRoutes
 * **Labels**: Consistent labeling across all resources
 
 ## Format

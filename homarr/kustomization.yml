@@ -8,7 +8,6 @@ resources:
   - deployment.yml
   - pvc.yml
   - service.yml
-  - httproute.yml
   - ../base
 
 secretGenerator:
@@ -74,7 +73,7 @@ replacements:
     targets:
       - select:
           kind: HTTPRoute
-          name: ingress-route
+          name: http-route
         fieldPaths:
           - spec.hostnames.0
   - source:
@@ -84,7 +83,7 @@ replacements:
     targets:
       - select:
           kind: HTTPRoute
-          name: ingress-route
+          name: http-route
         fieldPaths:
           - spec.hostnames.1
   - source:
@@ -94,7 +93,7 @@ replacements:
     targets:
       - select:
           kind: HTTPRoute
-          name: ingress-route
+          name: http-route
         fieldPaths:
           - spec.rules.0.backendRefs.0.port
 
