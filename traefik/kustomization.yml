@@ -13,6 +13,7 @@ resources:
   - gateway.yml
   - gateway-clusterrole.yml
   - gateway-clusterrolebinding.yml
+  - rolebinding.yml
 
 # configMapGenerator:
 #   - name: app-config
