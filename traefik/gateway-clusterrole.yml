@@ -12,6 +12,8 @@ rules:
       - gateways/status
       - httproutes
       - httproutes/status
+      - referencegrants
+      - referencegrants/status
     verbs:
       - get
       - list
