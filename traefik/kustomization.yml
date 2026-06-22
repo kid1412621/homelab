@@ -6,6 +6,7 @@ namespace: traefik
 resources:
   - namespace.yml
   - helmchartconfig.yml
+  - serviceaccount.yml
   - basic-auth-middleware.yml
   - dashboard.yml
   - gatewayclass.yml
