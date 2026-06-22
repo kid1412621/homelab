@@ -12,11 +12,22 @@ rules:
       - gateways/status
       - httproutes
       - httproutes/status
+      - grpcroutes
+      - grpcroutes/status
+      - tlsroutes
+      - tlsroutes/status
+      - tcproutes
+      - tcproutes/status
+      - udproutes
+      - udproutes/status
       - referencegrants
       - referencegrants/status
+      - backendtlspolicies
+      - backendtlspolicies/status
     verbs:
       - get
       - list
       - watch
       - update
       - patch
+
