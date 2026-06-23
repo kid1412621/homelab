@@ -8,9 +8,6 @@ spec:
     api:
       insecure: true
       dashboard: true
-    serviceAccount:
-      create: false
-      name: traefik
     providers:
       kubernetesGateway:
         enabled: true
