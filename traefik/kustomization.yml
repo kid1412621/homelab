@@ -26,7 +26,7 @@ configMapGenerator:
       - WAN_HOST=app-name.wan-domain
 
 patches:
-  - path: dashboard.yml
+  - path: dashboard-httproute.yml
     target:
       kind: HTTPRoute
       name: http-route
