@@ -1,30 +1,113 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: timescale
+  name: app
   labels:
-    app: timescale
+    app: tracearr
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: timescale
+      app: tracearr
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: timescale
+        app: tracearr
     spec:
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
-        runAsNonRoot: true
+      initContainers:
+        - name: init-permissions
+          image: busybox:1.37
+          securityContext:
+            runAsUser: 0
+            privileged: false
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /pvc-root/postgres /pvc-root/redis /pvc-root/backups /pvc-root/image-cache
+              chown -R 1000:1000 /pvc-root/postgres
+              chown -R 999:999 /pvc-root/redis
+              chown -R 1001:1001 /pvc-root/backups /pvc-root/image-cache
+          volumeMounts:
+            - name: data
+              mountPath: /pvc-root
+
       containers:
+        - name: tracearr
+          image: ghcr.io/connorgallopo/tracearr:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+            seccompProfile:
+              type: RuntimeDefault
+          envFrom:
+            - secretRef:
+                name: tracearr-secret
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: HOST
+              value: 0.0.0.0
+            - name: TZ
+              value: Asia/Chongqing
+            - name: DATABASE_URL
+              value: "postgres://tracearr:$(DB_PASSWORD)@localhost:5432/tracearr"
+            - name: REDIS_URL
+              value: "redis://localhost:6379"
+            - name: CORS_ORIGIN
+              value: "*"
+            - name: LOG_LEVEL
+              value: info
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: data
+              mountPath: /data/backup
+              subPath: backups
+            - name: data
+              mountPath: /app/data/image-cache
+              subPath: image-cache
+
         - name: timescale
           image: timescale/timescaledb-ha:pg18.1-ts2.25.0
           securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
             allowPrivilegeEscalation: false
             capabilities:
               drop: [ALL]
@@ -68,8 +151,9 @@ spec:
               cpu: "1"
               memory: 1Gi
           volumeMounts:
-            - name: timescale-data
+            - name: data
               mountPath: /home/postgres/pgdata/data
+              subPath: postgres
             - name: dshm
               mountPath: /dev/shm
           readinessProbe:
@@ -88,42 +172,13 @@ spec:
                 - tracearr
             initialDelaySeconds: 15
             periodSeconds: 10
-      volumes:
-        - name: timescale-data
-          persistentVolumeClaim:
-            claimName: timescale-data
-        - name: dshm
-          emptyDir:
-            medium: Memory
-            sizeLimit: 512Mi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: redis
-  labels:
-    app: redis
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: redis
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: redis
-    spec:
-      securityContext:
-        runAsUser: 999
-        runAsGroup: 999
-        fsGroup: 999
-        runAsNonRoot: true
-      containers:
+
         - name: redis
           image: redis:8-alpine
           securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            runAsNonRoot: true
             allowPrivilegeEscalation: false
             capabilities:
               drop: [ALL]
@@ -153,123 +208,15 @@ spec:
               cpu: 200m
               memory: 128Mi
           volumeMounts:
-            - name: redis-data
+            - name: data
               mountPath: /data
+              subPath: redis
+
       volumes:
-        - name: redis-data
+        - name: data
           persistentVolumeClaim:
-            claimName: redis-data
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: app
-  labels:
-    app: tracearr
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: tracearr
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: tracearr
-    spec:
-      securityContext:
-        runAsUser: 1001
-        runAsGroup: 1001
-        fsGroup: 1001
-        runAsNonRoot: true
-      initContainers:
-        - name: wait-db
-          image: busybox:1.37
-          command: ["sh", "-c", "i=0; until nc -z timescale 5432; do i=$((i+1)); [ $i -ge 60 ] && exit 1; sleep 2; done"]
-          resources:
-            requests:
-              cpu: 10m
-              memory: 16Mi
-            limits:
-              cpu: 50m
-              memory: 32Mi
-        - name: wait-redis
-          image: busybox:1.37
-          command: ["sh", "-c", "i=0; until nc -z redis 6379; do i=$((i+1)); [ $i -ge 60 ] && exit 1; sleep 2; done"]
-          resources:
-            requests:
-              cpu: 10m
-              memory: 16Mi
-            limits:
-              cpu: 50m
-              memory: 32Mi
-      containers:
-        - name: tracearr
-          image: ghcr.io/connorgallopo/tracearr:latest
-          imagePullPolicy: Always
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: [ALL]
-            seccompProfile:
-              type: RuntimeDefault
-          envFrom:
-            - secretRef:
-                name: tracearr-secret
-          env:
-            - name: NODE_ENV
-              value: production
-            - name: PORT
-              value: "3000"
-            - name: HOST
-              value: 0.0.0.0
-            - name: TZ
-              value: Asia/Chongqing
-            - name: DATABASE_URL
-              value: "postgres://tracearr:$(DB_PASSWORD)@timescale:5432/tracearr"
-            - name: REDIS_URL
-              value: "redis://redis:6379"
-            - name: CORS_ORIGIN
-              value: "*"
-            - name: LOG_LEVEL
-              value: info
-          ports:
-            - name: http
-              containerPort: 3000
-              protocol: TCP
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: http
-            initialDelaySeconds: 15
-            periodSeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: http
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-          volumeMounts:
-            - name: tracearr-backups
-              mountPath: /data/backup
-            - name: tracearr-image-cache
-              mountPath: /app/data/image-cache
-      volumes:
-        - name: tracearr-backups
-          persistentVolumeClaim:
-            claimName: tracearr-backups
-        - name: tracearr-image-cache
-          persistentVolumeClaim:
-            claimName: tracearr-image-cache
+            claimName: data
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 512Mi
