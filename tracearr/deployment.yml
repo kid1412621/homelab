@@ -95,8 +95,20 @@ spec:
               subPath: postgres
             - name: dshm
               mountPath: /dev/shm
-          healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U tracearr"]
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - tracearr
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - tracearr
             initialDelaySeconds: 15
             periodSeconds: 10
 
