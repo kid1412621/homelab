@@ -1,0 +1,14 @@
+[Unit]
+Description=Jellyfin K8s Port Forward for Tailscale Funnel
+After=network.target k3s.service
+Requires=k3s.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/kubectl port-forward -n jellyfin svc/service 8096:8096 --address=127.0.0.1
+Restart=on-failure
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target
