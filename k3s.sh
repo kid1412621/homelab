@@ -8,27 +8,24 @@ fi
 
 # deploy k3s configuration with optimizations before installation
 # this prevents Kine/SQLite bloat on long-running clusters
-echo "Deploying K3s configuration with database optimization parameters..."
+echo "Deploying K3s configuration with API server parameters..."
 sudo mkdir -p /etc/rancher/k3s
 sudo tee /etc/rancher/k3s/config.yaml > /dev/null <<'EOF'
-# K3s Production Optimization Configuration
-# Prevents Kine/SQLite from bloating on long-running clusters
+# K3s Production Configuration
 # See: k3s-config.yaml for full documentation
-
-etcd-arg:
-  - "checkpoint-interval=5m"
-  - "auto-compaction-retention=1"
 
 kube-apiserver-arg:
   - "event-ttl=30m"
   - "max-requests-inflight=400"
   - "max-mutating-requests-inflight=200"
-
-log: info
 EOF
-
 # download and install k3s
 curl -sfL https://get.k3s.io | sh -
+
+sudo tee /etc/systemd/system/k3s.service.env > /dev/null <<'EOF'
+PATH=/var/lib/rancher/k3s/data/current/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+EOF
+sudo systemctl daemon-reload
 
 # setup kubeconfig
 KUBECONFIG=$HOME/.kube/config
@@ -48,4 +45,4 @@ sudo firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16 #pods
 sudo firewall-cmd --permanent --zone=trusted --add-source=10.43.0.0/16 #services
 sudo firewall-cmd --reload
 
-echo "K3s installation complete with optimization parameters applied."
+echo "K3s installation complete with API server parameters applied."

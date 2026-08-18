@@ -1,16 +1,6 @@
 # K3s Production Optimization Configuration
 # Prevents Kine/SQLite from bloating on long-running clusters
 
-# Kine Database Compaction & Automatic Cleanup
-etcd-arg:
-  # Forces Kine to flush and checkpoint data state every 5 minutes
-  # Prevents unbounded WAL (write-ahead log) growth
-  - "checkpoint-interval=5m"
-  
-  # Aggressively deletes historical versions older than 1 hour
-  # Reduces row count in the kine table and disk fragmentation
-  - "auto-compaction-retention=1"
-
 # Kube-API Server Event & Leader Throttling
 kube-apiserver-arg:
   # Drastically reduce event log retention from 1-3h (default) to 30 minutes
@@ -20,6 +10,3 @@ kube-apiserver-arg:
   # Prevent rapid successive API updates from overwhelming the database
   - "max-requests-inflight=400"
   - "max-mutating-requests-inflight=200"
-
-# K3s Logging
-log: info
